@@ -21,12 +21,12 @@ SQLite3::Database.new 'database.sqlite' do |db|
   # Find the ID for the '#publish' tag
   publish_tag_id = db.get_first_value <<-SQL
   SELECT ZSFNOTETAG.Z_PK FROM ZSFNOTETAG
-  WHERE ZSFNOTETAG.ZTITLE = "worthit";
+  WHERE ZSFNOTETAG.ZTITLE = "publish";
   SQL
 
   # Get notes from the database that...
   # - are tagged with `#publish`
-  # - were updated after last night at midnight
+  # - TODO: were updated after last night at midnight
   query = <<-SQL
   SELECT ZSFNOTE.Z_PK, 
          ZSFNOTE.ZTITLE as NoteTitle,
@@ -36,7 +36,6 @@ SQLite3::Database.new 'database.sqlite' do |db|
   LEFT OUTER JOIN Z_7TAGS ON ZSFNOTE.Z_PK = Z_7TAGS.Z_7NOTES AND Z_7TAGS.Z_14TAGS = #{publish_tag_id}
   INNER JOIN ZSFNOTETAG ON Z_7TAGS.Z_14TAGS = ZSFNOTETAG.Z_PK;
   SQL
-  # WHERE ZSFNOTE.ZMODIFICATIONDATE
 
   # For each result, create a text file with a .md ending
   db.execute(query) do |note|
