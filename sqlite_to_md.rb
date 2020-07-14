@@ -43,10 +43,13 @@ SQLite3::Database.new 'database.sqlite' do |db|
     title = note["NoteTitle"]
     note_text = note["NoteText"]
     last_updated = cocoa_timestamp_to_datetime(note["LastUpdated"])
-    title_slug = title.downcase.gsub(/\s+/, '-')
+    title_slug = title.downcase.gsub(/\s+/, '-').gsub(/,/, '')
 
-    # Prep the file
-    # Write out the front-matter
+    # Prep the file =================================================
+    # 1. Strip the last line (that's where the tag is from Bear)
+    note_text = note_text.split("\n")[0...-1].join("\n")
+
+    # 2. Write out the front-matter
     front_matter = <<~FMTR
       ---
       slug: "articles/#{title_slug}"
@@ -54,7 +57,6 @@ SQLite3::Database.new 'database.sqlite' do |db|
       title: #{title}
       ---
     FMTR
-
     note_text = front_matter + note_text
 
     File.write("#{title_slug}.md", note_text)
