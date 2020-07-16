@@ -26,7 +26,8 @@ SQLite3::Database.new 'database.sqlite' do |db|
 
   # Get notes from the database that...
   # - are tagged with `#publish`
-  # - TODO: were updated after last night at midnight
+  # - TODO: get only notes that were updated after the last time this ran
+  #         OR get every note every time
   query = <<-SQL
   SELECT ZSFNOTE.Z_PK, 
          ZSFNOTE.ZTITLE as NoteTitle,
