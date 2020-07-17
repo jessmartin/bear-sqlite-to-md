@@ -1,5 +1,6 @@
 require 'sqlite3'
 require 'date'
+require 'aws-sdk-s3'
 
 def cocoa_timestamp_to_datetime(timestamp)
   # unix and coredata timestamps differ by 978307200 seconds 
@@ -14,52 +15,61 @@ def datetime_to_cocoa_timestamp(date_time)
   date_time.to_i - cocoa_unix_timestamp_diff
 end
 
-# Open the database
-SQLite3::Database.new 'database.sqlite' do |db|
-  db.results_as_hash = true
 
-  # Find the ID for the '#publish' tag
-  publish_tag_id = db.get_first_value <<-SQL
-  SELECT ZSFNOTETAG.Z_PK FROM ZSFNOTETAG
-  WHERE ZSFNOTETAG.ZTITLE = "publish";
-  SQL
+s3 = Aws::S3::Resource.new(region: 'us-west-2')
+# Create the source object
+sourceObj = s3.bucket('jessmartdotin-notesdb').object('database.sqlite')
+# Download the file
+sourceObj.get(response_target: './')
+# puts "s3://#{bucketName}/#{key} has been downloaded to #{localPath}"
 
-  # Get notes from the database that...
-  # - are tagged with `#publish`
-  # - TODO: get only notes that were updated after the last time this ran
-  #         OR get every note every time
-  query = <<-SQL
-  SELECT ZSFNOTE.Z_PK, 
-         ZSFNOTE.ZTITLE as NoteTitle,
-         ZSFNOTE.ZTEXT as NoteText,
-         ZSFNOTE.ZMODIFICATIONDATE as LastUpdated
-  FROM ZSFNOTE
-  LEFT OUTER JOIN Z_7TAGS ON ZSFNOTE.Z_PK = Z_7TAGS.Z_7NOTES AND Z_7TAGS.Z_14TAGS = #{publish_tag_id}
-  INNER JOIN ZSFNOTETAG ON Z_7TAGS.Z_14TAGS = ZSFNOTETAG.Z_PK;
-  SQL
 
-  # For each result, create a text file with a .md ending
-  db.execute(query) do |note|
-    # Extract info from the note
-    title = note["NoteTitle"]
-    note_text = note["NoteText"]
-    last_updated = cocoa_timestamp_to_datetime(note["LastUpdated"])
-    title_slug = title.downcase.gsub(/\s+/, '-').gsub(/,/, '')
+# # Open the database
+# SQLite3::Database.new 'database.sqlite' do |db|
+#   db.results_as_hash = true
 
-    # Prep the file =================================================
-    # 1. Strip the last line (that's where the tag is from Bear)
-    note_text = note_text.split("\n")[0...-1].join("\n")
+#   # Find the ID for the '#publish' tag
+#   publish_tag_id = db.get_first_value <<-SQL
+#   SELECT ZSFNOTETAG.Z_PK FROM ZSFNOTETAG
+#   WHERE ZSFNOTETAG.ZTITLE = "publish";
+#   SQL
 
-    # 2. Write out the front-matter
-    front_matter = <<~FMTR
-      ---
-      slug: "articles/#{title_slug}"
-      date: #{last_updated.strftime("%F")}
-      title: #{title}
-      ---
-    FMTR
-    note_text = front_matter + note_text
+#   # Get notes from the database that...
+#   # - are tagged with `#publish`
+#   # - TODO: get only notes that were updated after the last time this ran
+#   #         OR get every note every time
+#   query = <<-SQL
+#   SELECT ZSFNOTE.Z_PK, 
+#          ZSFNOTE.ZTITLE as NoteTitle,
+#          ZSFNOTE.ZTEXT as NoteText,
+#          ZSFNOTE.ZMODIFICATIONDATE as LastUpdated
+#   FROM ZSFNOTE
+#   LEFT OUTER JOIN Z_7TAGS ON ZSFNOTE.Z_PK = Z_7TAGS.Z_7NOTES AND Z_7TAGS.Z_14TAGS = #{publish_tag_id}
+#   INNER JOIN ZSFNOTETAG ON Z_7TAGS.Z_14TAGS = ZSFNOTETAG.Z_PK;
+#   SQL
 
-    File.write("#{title_slug}.md", note_text)
-  end
-end
+#   # For each result, create a text file with a .md ending
+#   db.execute(query) do |note|
+#     # Extract info from the note
+#     title = note["NoteTitle"]
+#     note_text = note["NoteText"]
+#     last_updated = cocoa_timestamp_to_datetime(note["LastUpdated"])
+#     title_slug = title.downcase.gsub(/\s+/, '-').gsub(/,/, '')
+
+#     # Prep the file =================================================
+#     # 1. Strip the last line (that's where the tag is from Bear)
+#     note_text = note_text.split("\n")[0...-1].join("\n")
+
+#     # 2. Write out the front-matter
+#     front_matter = <<~FMTR
+#       ---
+#       slug: "articles/#{title_slug}"
+#       date: #{last_updated.strftime("%F")}
+#       title: #{title}
+#       ---
+#     FMTR
+#     note_text = front_matter + note_text
+
+#     File.write("#{title_slug}.md", note_text)
+#   end
+# end
