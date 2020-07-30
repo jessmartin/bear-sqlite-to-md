@@ -62,9 +62,13 @@ SQLite3::Database.new 'database.sqlite' do |db|
 
     # 3. Convert cross-links to relative URLs
     # - Find all instances of [[title]] cross-links in the file
-    # - Extract the `title` from the cross-links
-    # - Query the database for the ZUNIQUEIDENTIFIER for the note matching that title
-    # - Replace the link with [title](/articles/UUID)
+    #   - Use a regex and scan every line
+    note_text.sub!(/\[\[.*]]/).each do |match|
+      # - Extract the `title` from the cross-links
+      note_title = $1
+      # - Query the database for the ZUNIQUEIDENTIFIER for the note matching that title
+      # - Replace the link with [title](/articles/UUID)
+    end
 
     File.write("#{title_slug}.md", note_text)
   end
