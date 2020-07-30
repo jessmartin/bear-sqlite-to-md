@@ -9,7 +9,7 @@ This is a simple Ruby script to export Bear notes from SQLite database to markdo
 1. Copy the new Bear sqlite database to this local directory. 
 
     ```
-    cp ~/Library/Group\ Containers/9K33E3U3T4.net.shinyfrog.bear/Application\ Data/database.sqlite
+    cp ~/Library/Group\ Containers/9K33E3U3T4.net.shinyfrog.bear/Application\ Data/database.sqlite database.sqlite
     ```
 
 2. Run the ruby script to extract and generate markdown files.
