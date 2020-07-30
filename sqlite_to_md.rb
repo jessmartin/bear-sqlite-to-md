@@ -60,6 +60,12 @@ SQLite3::Database.new 'database.sqlite' do |db|
     FMTR
     note_text = front_matter + note_text
 
+    # 3. Convert cross-links to relative URLs
+    # - Find all instances of [[title]] cross-links in the file
+    # - Extract the `title` from the cross-links
+    # - Query the database for the ZUNIQUEIDENTIFIER for the note matching that title
+    # - Replace the link with [title](/articles/UUID)
+
     File.write("#{title_slug}.md", note_text)
   end
 end
