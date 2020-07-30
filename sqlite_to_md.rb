@@ -32,6 +32,7 @@ SQLite3::Database.new 'database.sqlite' do |db|
   SELECT ZSFNOTE.Z_PK, 
          ZSFNOTE.ZTITLE as NoteTitle,
          ZSFNOTE.ZTEXT as NoteText,
+         ZSFNOTE.ZUNIQUEIDENTIFIER as NoteUUID,
          ZSFNOTE.ZMODIFICATIONDATE as LastUpdated
   FROM ZSFNOTE
   LEFT OUTER JOIN Z_7TAGS ON ZSFNOTE.Z_PK = Z_7TAGS.Z_7NOTES AND Z_7TAGS.Z_14TAGS = #{publish_tag_id}
@@ -44,7 +45,7 @@ SQLite3::Database.new 'database.sqlite' do |db|
     title = note["NoteTitle"]
     note_text = note["NoteText"]
     last_updated = cocoa_timestamp_to_datetime(note["LastUpdated"])
-    title_slug = title.downcase.gsub(/\s+/, '-').gsub(/,/, '')
+    title_slug = note["NoteUUID"]
 
     # Prep the file =================================================
     # 1. Strip the last line (that's where the tag is from Bear)
