@@ -57,10 +57,11 @@ SQLite3::Database.new 'database.sqlite' do |db|
       slug: "articles/#{title_slug}"
       date: #{last_updated.strftime("%F")}
       title: #{title}
+      pageType: research-note
       ---
     FMTR
     note_text = front_matter + note_text
 
-    File.write("#{title_slug}.md", note_text)
+    File.write("./markdown-files/#{title_slug}.md", note_text)
   end
 end
