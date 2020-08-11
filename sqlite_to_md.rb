@@ -54,7 +54,7 @@ SQLite3::Database.new 'database.sqlite' do |db|
     # 2. Write out the front-matter
     front_matter = <<~FMTR
       ---
-      slug: "articles/#{title_slug}"
+      slug: "notes/#{title_slug}"
       date: #{last_updated.strftime("%F")}
       title: #{title}
       pageType: research-note
