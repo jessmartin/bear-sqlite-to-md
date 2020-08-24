@@ -56,7 +56,7 @@ SQLite3::Database.new 'database.sqlite' do |db|
       ---
       slug: "notes/#{title_slug}"
       date: #{last_updated.strftime("%F")}
-      title: #{title}
+      title: "#{title}"
       pageType: research-note
       ---
     FMTR
